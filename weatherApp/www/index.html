@@ -1,0 +1,64 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="initial-scale=1, maximum-scale=1, user-scalable=no, width=device-width">
+    <title>Weather companion</title>
+
+    <link href="lib/ionic/css/ionic.css" rel="stylesheet">
+    <link href="css/style.css" rel="stylesheet">
+
+    <!-- IF using Sass (run gulp sass first), then uncomment below and remove the CSS includes above
+    <link href="css/ionic.app.css" rel="stylesheet">
+    -->
+
+    <!-- ionic/angularjs js & Socket.io -->
+    <script src="lib/ionic/js/ionic.bundle.js"></script>
+    <script src="lib/socket.io/socket.io.js"></script>
+
+    <!-- cordova script (this will be a 404 during development) -->
+    <script src="cordova.js"></script>
+
+    <!-- your app's js -->
+    <script src="js/app.js"></script>
+    <script src="js/controllers.js"></script>
+  </head>
+  <body ng-app="companion">
+    <ion-pane>
+
+      <ion-header-bar class="bar-calm">
+        <h1 class="title">Weather companion</h1>
+      </ion-header-bar>
+
+        <script id="search.html" type="text/ng-template">
+          <ion-view title="Search">
+              <ion-content>
+
+                <h2>Search...</h2>
+
+                <label class="item item-input">
+                  <i class="icon ion-search placeholder-icon"></i>
+                  <input type="text" ng-model="searchString" ng-change="update()" placeholder="Search">
+                </label>
+
+                <ul class="list">
+                  <li class="item" ng-repeat="i in items" ng-click="selectCity(i)">
+                    <a ui-sref="active">{{i.name}}</a>
+                  </li>
+                </ul>
+              </ion-content>
+          </ion-view>
+        </script>
+
+        <script id="active.html" type="text/ng-template">
+          <ion-view title="Active">
+              <ion-content>
+                <div>{{activeCity}}</div>
+                <h2><a ui-sref="search">Choose another location</a></h2>
+              </ion-content>
+          </ion-view>
+        </script>
+    </ion-pane>
+  
+  </body>
+</html>
