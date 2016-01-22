@@ -3,8 +3,8 @@ var io = require('socket.io')(app);
 var five = require('johnny-five');
 var stepperctl = require('./steppercontrol');
 var ports= [
-	{id: 'UNO', port:"COM4"},
-	{id: 'MEGA', port:"COM3"},
+	{id: 'UNO', port:"COM3"},
+	{id: 'MEGA', port:"COM5"},
 ];
 var posClockH = 0,
 	posClockM = 0,
@@ -18,6 +18,7 @@ var posSteppers = [posClockH, posClockM, posTemp1, posTemp2, posWeather, posWind
 app.listen(3500);
 
 new five.Boards(ports).on("ready", function () {
+	console.log('Boards ready');
 	// Arduino UNO
 	var clockH = new five.Stepper({
 		type: five.Stepper.TYPE.FOUR_WIRE,
@@ -53,12 +54,11 @@ new five.Boards(ports).on("ready", function () {
 	var wind = new five.Stepper ({
   		type: five.Stepper.TYPE.FOUR_WIRE,
 		board: this.byId('MEGA'),
-	    pins: [28, 4, 3, 2],
+	    pins: [48, 4, 3, 2],
 	    stepsPerRev: 64 
 	});	
 
-	stap(clockH, posSteppers, 5);
-	//stap(clockM, posSteppers, 45);
+
 
 	
 	function stap(stepper, posArray, nextPos) {
@@ -79,6 +79,7 @@ new five.Boards(ports).on("ready", function () {
 
 
 
+
 	}
 
   	io.on('connection', function(socket) {
@@ -87,12 +88,29 @@ new five.Boards(ports).on("ready", function () {
 		socket.on('weather', function(data) {
 			console.log(data);
 			
-			// switch (data.weather[0].main) {
-			// 	case 'Rain':
-			// 	case 'Clouds':
-			// 	case 'Clear':
-			// 	case 'Mist'
-			// }
+			switch (data.weather[0].main) {
+				case 'Rain':
+					stap(weather, posSteppers, 72);
+				break;
+				case 'Clouds':
+					stap(weather, posSteppers, 144);
+				break;
+				case 'Clear':
+					stap(weather, posSteppers, 216);
+				break;
+				case 'Mist':
+					stap(weather, posSteppers, 288);
+				break;
+				case: 'Storm':
+					stap(weather, posSteppers, 360);
+				break;
+			}
+			stap(wind, posSteppers, data.wind.deg);
+			var temp = data.temp;
+			var tens = temp.substr(0,1);
+			var ones = temp.substr(1,2);
+			stap(temp1, posSteppers, tens*36);
+			stap(temp2, posSteppers, ones*36);
 		});
 
 		socket.on('clock', function(data) {
@@ -103,7 +121,8 @@ new five.Boards(ports).on("ready", function () {
 			var minutes = localtime.getMinutes();
 			stap(clockH, posSteppers, (hours)*30);
 			stap(clockM, posSteppers, minutes*6);
-		})
+		});
+
 
 		socket.on('quit', function() {
 			for(var index in steppers) {
